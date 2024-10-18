@@ -1,0 +1,75 @@
+import pandas as pd
+import numpy as np
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+# Step 1: Generate synthetic data
+np.random.seed(42)
+
+# Number of samples
+num_samples = 1000
+
+# Features
+age = np.random.randint(20, 60, size=num_samples)  # Age between 20 and 60
+pregnancies = np.random.randint(0, 5, size=num_samples)  # Number of pregnancies
+bmi = np.random.uniform(15, 40, size=num_samples)  # BMI between 15 and 40
+insulin = np.random.uniform(10, 300, size=num_samples)  # Insulin level
+blood_pressure = np.random.randint(60, 120, size=num_samples)  # Blood pressure
+skin_thickness = np.random.randint(5, 50, size=num_samples)  # Skin thickness
+glucose_level = np.random.randint(50, 200, size=num_samples)  # Glucose level
+diabetes_pedigree = np.random.uniform(0.1, 2.5, size=num_samples)  # Diabetes pedigree function
+
+# Simulating the outcome (1: Has Diabetes, 0: No Diabetes)
+# A basic rule to determine diabetes presence for simulation
+outcome = (0.3 * (age > 30) + 
+           0.3 * (bmi > 25) + 
+           0.3 * (glucose_level > 140) + 
+           0.1 * (insulin > 150) + 
+           0.2 * (diabetes_pedigree > 0.5) > np.random.rand(num_samples)).astype(int)
+
+# Step 2: Create a DataFrame
+data = {
+    'Age': age,
+    'Pregnancies': pregnancies,
+    'BMI': bmi,
+    'Insulin': insulin,
+    'BloodPressure': blood_pressure,
+    'SkinThickness': skin_thickness,
+    'GlucoseLevel': glucose_level,
+    'DiabetesPedigreeFunction': diabetes_pedigree,
+    'Outcome': outcome
+}
+
+df = pd.DataFrame(data)
+
+# Display the first few records
+print(df.head())
+
+# Step 3: Split the dataset into training and testing sets
+X = df.drop(columns=['Outcome'])
+y = df['Outcome']
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Step 4: Train a Random Forest Classifier
+clf = RandomForestClassifier(n_estimators=100, random_state=42)
+clf.fit(X_train, y_train)
+
+# Step 5: Make predictions
+y_pred = clf.predict(X_test)
+
+# Step 6: Evaluate the model
+print("Accuracy:", accuracy_score(y_test, y_pred))
+print(classification_report(y_test, y_pred))
+
+# Confusion Matrix
+cm = confusion_matrix(y_test, y_pred)
+sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', xticklabels=['No Diabetes', 'Diabetes'], 
+            yticklabels=['No Diabetes', 'Diabetes'])
+plt.xlabel('Predicted')
+plt.ylabel('True')
+plt.title('Confusion Matrix')
+plt.show()
